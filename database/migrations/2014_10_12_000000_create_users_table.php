@@ -6,36 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Запуск миграции.
-     */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
+        Schema::create('users', function (Blueprint $col) {
+            $col->id();
+            $col->string('name');
+            $col->string('email')->unique();
+            $col->timestamp('email_verified_at')->nullable();
+            $col->string('password');
 
-            $table->foreignId('parent_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('cascade');
+            // Роли: 1 - superadmin, 2 - admin, 3 - moderator, 4 - user
+            $col->unsignedTinyInteger('role')->default(4)->index();
 
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->string('role')->default('0');
+            // Иерархия (parent_id)
+            $col->foreignId('parent_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
-            $table->rememberToken();
-            $table->timestamps();
+            $col->rememberToken();
+            $col->timestamps();
         });
     }
 
-    /**
-     * Откат миграции.
-     */
     public function down(): void
     {
-        // Перед удалением таблицы желательно отключить проверку внешних ключей (опционально)
         Schema::dropIfExists('users');
     }
-};
+};  
