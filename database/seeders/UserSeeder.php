@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
         [
             'name' => 'adminp',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 1,
+            'role' => User::ROLE_ADMIN,
             'parent_id' => null
         ]
     );
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
         [
             'name' => 'superadmin',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 2,
+            'role' => User::ROLE_SUPERADMIN,
             'parent_id' => null
         ]
     );

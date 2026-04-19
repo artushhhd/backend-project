@@ -11,6 +11,12 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // 1. Добавляем константы ролей
+    public const ROLE_SUPERADMIN = 'superadmin';
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_MODERATOR = 'moderator';
+    public const ROLE_USER = 'user';
+
     protected $fillable = [
         'name',
         'email',
@@ -26,10 +32,22 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'role' => 'integer',
+        // 2. ВАЖНО: Удалите 'integer' для role, так как теперь это строка.
+        // Можно заменить на 'string' или просто удалить эту строку.
+        'role' => 'string',
         'parent_id' => 'integer',
     ];
 
+    // 3. Полезные методы для проверки (опционально, но удобно)
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPERADMIN;
+    }
 
 
     public function parent()
@@ -46,7 +64,7 @@ class User extends Authenticatable
     {
         return $this->children()->with('descendants');
     }
-    
+
     public function products()
     {
         return $this->hasMany(Product::class, 'user_id');

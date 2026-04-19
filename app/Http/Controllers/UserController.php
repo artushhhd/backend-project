@@ -10,23 +10,23 @@ use App\Http\Requests\{RegisterRequest, LoginRequest};
 class UserController extends Controller
 {
     public function register(RegisterRequest $request)
-{
-    $user = User::create([
-        'name'      => $request->name,
-        'email'     => $request->email,
-        'password'  => Hash::make($request->password),
-        'parent_id' => $request->parent_id,
-        'role'      => '0',
-    ]);
+    {
+        $user = User::create([
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'parent_id' => $request->parent_id,
+            'role'      => User::ROLE_USER,
+        ]);
 
-    $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-    return response()->json([
-        'message' => 'Register successful',
-        'user'    => $user,
-        'token'   => $token,
-    ], 201);
-}
+        return response()->json([
+            'message' => 'Register successful',
+            'user'    => $user,
+            'token'   => $token,
+        ], 201);
+    }
 
     public function login(LoginRequest $request)
     {
@@ -46,7 +46,6 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
         return response()->json(['message' => 'Logged out successfully']);
     }
 

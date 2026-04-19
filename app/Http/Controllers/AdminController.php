@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-
     public function index()
     {
         return response()->json([
@@ -27,74 +26,78 @@ class AdminController extends Controller
     public function makeAdmin($id)
     {
         $user = User::findOrFail($id);
-        $user->update(['role' => 1]);
+        $user->update(['role' => 'admin']);
 
         return response()->json([
-            'message' => "Пользователь {$user->name} теперь Админ (1)."
+            'message' => "Пользователь {$user->name} теперь Администратор."
         ]);
     }
 
     public function makeSuperAdmin($id)
     {
-        if ((int)auth()->user()->role !== 2) {
+        if (auth()->user()->role !== 'superadmin') {
             return response()->json(['message' => 'У вас нет прав для назначения Super Admin'], 403);
         }
 
         $user = User::findOrFail($id);
-        $user->update(['role' => 2]);
+        $user->update(['role' => 'superadmin']);
 
         return response()->json([
-            'message' => "Пользователь {$user->name} теперь Super Admin (2)!"
+            'message' => "Пользователь {$user->name} теперь Super Admin!"
         ]);
     }
+
     public function makeModerator($id)
     {
-        $authRole=(int)auth()->user()->role;
-        if ($authRole !== 2 && $authRole !== 1) {
-            return response()->json(['message' => 'У вас нет прав для назначения Moderator'],403);
+        $authRole = auth()->user()->role;
+
+        if ($authRole !== 'superadmin' && $authRole !== 'admin') {
+            return response()->json(['message' => 'У вас нет прав для назначения Moderator'], 403);
         }
+
         $user = User::findOrFail($id);
-        if ($user->role === 2 && $authRole !== 2) {
-            return response()->json(['message' => 'Невозможно понизить Super Admin до Moderator'],403);
+
+        if ($user->role === 'superadmin' && $authRole !== 'superadmin') {
+            return response()->json(['message' => 'Невозможно понизить Super Admin до Moderator'], 403);
         }
-        $user->update(['role' => 3]);
+
+        $user->update(['role' => 'moderator']);
         return response()->json([
-            'message' => "Пользователь {$user->name} теперь Moderator (3)!"
+            'message' => "Пользователь {$user->name} теперь Moderator!"
         ]);
     }
 
     public function deleteProduct($id)
     {
         $product = Product::findOrFail($id);
+
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
+
         $product->delete();
-        $role=(int)auth()->user()->role;
 
-        if($role===3){
-            $ower=User::find($product->user_id);
-            return response()->json(['message' => 'Товар удален. У вас нет прав для удаления других товаров.']);
-
-        }
-
-
-        return response()->json(['message' => 'Товар удален.']);
+        return response()->json(['message' => 'Товар успешно удален.']);
     }
 
     public function destroyUser($id)
     {
         $user = User::findOrFail($id);
+        $currentUser = auth()->user();
 
-        if (auth()->id() == $id) {
+        if ($currentUser->id == $id) {
             return response()->json(['message' => 'Вы не можете удалить свой собственный аккаунт'], 403);
+        }
+
+        if ($user->role === 'superadmin' && $currentUser->role !== 'superadmin') {
+            return response()->json(['message' => 'Недостаточно прав для удаления Super Admin'], 403);
         }
 
         DB::transaction(function () use ($user) {
             $this->recursiveDelete($user);
         });
 
-        return response()->json(['message' => 'Пользователь и вся его структура удалены.']);
+        return response()->json(['message' => 'Пользователь и вся его структура успешно удалены.']);
     }
 
     private function recursiveDelete(User $user)

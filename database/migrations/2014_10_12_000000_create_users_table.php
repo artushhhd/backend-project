@@ -15,10 +15,10 @@ return new class extends Migration
             $col->timestamp('email_verified_at')->nullable();
             $col->string('password');
 
-            // Роли: 1 - superadmin, 2 - admin, 3 - moderator, 4 - user
-            $col->unsignedTinyInteger('role')->default(4)->index();
+            $col->enum('role', ['superadmin', 'admin', 'moderator', 'user'])
+                ->default('user')
+                ->index();
 
-            // Иерархия (parent_id)
             $col->foreignId('parent_id')
                 ->nullable()
                 ->constrained('users')
@@ -33,4 +33,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('users');
     }
-};  
+};
