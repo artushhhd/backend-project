@@ -10,9 +10,10 @@ use App\Http\Middleware\CheckAdmin;
 | API Routes
 |--------------------------------------------------------------------------
 */
+
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
-Route::get('/products', [AddProductsController::class, 'index']);
+Route::get('/products', [AddProductsController::class, 'index']); 
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -27,15 +28,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [AddProductsController::class, 'destroy']);
     });
 
+
     Route::middleware(CheckAdmin::class)->prefix('admin')->group(function () {
 
         Route::get('/data', [AdminController::class, 'index']);
+
         Route::get('/users/{id}/products', [AdminController::class, 'getUserProducts']);
 
         Route::prefix('users/{id}')->group(function () {
             Route::post('/make-moderator', [AdminController::class, 'makeModerator']);
             Route::post('/make-admin', [AdminController::class, 'makeAdmin']);
             Route::post('/make-super-admin', [AdminController::class, 'makeSuperAdmin']);
+
             Route::delete('/', [AdminController::class, 'destroyUser']);
         });
 
